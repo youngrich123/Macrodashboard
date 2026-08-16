@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0f1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Macro">
+<link rel="manifest" href="/manifest.webmanifest">
+<title>Macro Dashboard</title>
+<style>
+:root{
+  --bg:#070b12; --panel:#0f1725; --panel2:#141e30; --line:#22304a;
+  --txt:#e6edf7; --dim:#8b9bb4; --dim2:#5f6f8a;
+  --g:#3fbf7f; --a:#e0a83c; --r:#e4665c; --acc:#5b8dd6;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px;line-height:1.45}
+a{color:var(--acc);text-decoration:none}
+header{position:sticky;top:0;z-index:30;background:rgba(7,11,18,.94);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+.hrow{display:flex;align-items:center;gap:10px;padding:10px 14px 8px}
+.h1{font-size:15px;font-weight:650;letter-spacing:.2px}
+.h1 span{color:var(--dim2);font-weight:400}
+.hbtns{margin-left:auto;display:flex;gap:6px}
+button{font:inherit;color:var(--txt);background:var(--panel2);border:1px solid var(--line);
+  border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
+button:active{transform:scale(.97)}
+button.pri{background:#1c3a5e;border-color:#2a5285}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:0 12px 10px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap;padding:6px 12px;border-radius:20px;border:1px solid var(--line);
+  background:var(--panel);color:var(--dim);font-size:13px;cursor:pointer}
+.tab.on{background:var(--acc);border-color:var(--acc);color:#05101f;font-weight:600}
+main{padding:14px 12px 60px;max-width:1500px;margin:0 auto}
+.secttl{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim2);
+  margin:20px 2px 8px;font-weight:600}
+.secttl:first-child{margin-top:4px}
+.grid{display:grid;gap:9px;grid-template-columns:1fr}
+@media(min-width:560px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:900px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1250px){.grid{grid-template-columns:repeat(4,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 12px;
+  position:relative;overflow:hidden;cursor:pointer}
+.card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--dim2);opacity:.5}
+.card.g:before{background:var(--g);opacity:1}
+.card.a:before{background:var(--a);opacity:1}
+.card.r:before{background:var(--r);opacity:1}
+.cname{font-size:12.5px;color:var(--dim);font-weight:500;display:flex;gap:6px;align-items:baseline}
+.cid{font-family:var(--mono);font-size:10px;color:var(--dim2);margin-left:auto;flex-shrink:0}
+.cval{font-size:26px;font-weight:600;font-family:var(--mono);letter-spacing:-.5px;margin-top:4px;
+  display:flex;align-items:baseline;gap:7px}
+.cval small{font-size:12px;font-weight:400;color:var(--dim);font-family:inherit}
+.csub{font-size:11.5px;color:var(--dim2);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
+.up{color:var(--r)}.dn{color:var(--g)}.upg{color:var(--g)}.dnr{color:var(--r)}
+.spark{margin-top:7px;height:30px;width:100%;display:block}
+.note{display:none;font-size:12px;color:var(--dim);margin-top:8px;padding-top:8px;
+  border-top:1px solid var(--line);line-height:1.5}
+.card.open .note{display:block}
+.err{color:var(--r);font-size:11px;font-family:var(--mono)}
+.load{color:var(--dim2);font-size:12px;font-family:var(--mono)}
+.panelbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.regime{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:700px){.regime{grid-template-columns:1fr 1fr 1fr}}
+.rg{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px}
+.rg h4{margin:0 0 6px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--dim2)}
+.rgv{font-size:19px;font-weight:650}
+.rgs{font-size:12px;color:var(--dim);margin-top:4px}
+.quad{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:10px}
+.qc{padding:9px;border-radius:8px;border:1px solid var(--line);font-size:11.5px;color:var(--dim2);text-align:center;background:#0b1220}
+.qc.on{border-color:var(--acc);background:#16233a;color:var(--txt);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--dim2);font-weight:600;font-size:11px;letter-spacing:.6px;text-transform:uppercase}
+.pill{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10.5px;
+  border:1px solid var(--line);color:var(--dim);font-family:var(--mono)}
+input[type=text]{font:inherit;background:#0b1220;color:var(--txt);border:1px solid var(--line);
+  border-radius:8px;padding:8px 10px;width:100%;font-size:14px}
+.row{display:flex;gap:8px;align-items:center}
+.foot{color:var(--dim2);font-size:11.5px;margin-top:26px;padding-top:12px;border-top:1px solid var(--line)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--panel2);border-top:1px solid var(--line);
+  padding:7px 14px calc(7px + env(safe-area-inset-bottom));font-size:11.5px;color:var(--dim2);
+  display:flex;gap:10px;align-items:center;z-index:20}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--dim2);flex-shrink:0}
+.dot.ok{background:var(--g)}.dot.busy{background:var(--a)}.dot.bad{background:var(--r)}
+ul{margin:6px 0;padding-left:18px}li{margin:3px 0}
+code{font-family:var(--mono);font-size:12px;background:#0b1220;padding:1px 5px;border-radius:4px;color:#9dc0ea}
+
+/* v3 — hosted/PWA quality-of-life */
+.hbtns button{min-width:38px;min-height:34px}
+.csub .delta{color:var(--dim)}
+.csub .warn{color:var(--a)}
+.csub .cached{color:var(--dim2)}
+.card.stale{border-style:dashed}
+.card.stale:after{content:"cached";position:absolute;right:10px;bottom:7px;font:9px var(--mono);color:var(--dim2);opacity:.8}
+.status-spacer{margin-left:auto}
+dialog{color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:0;max-width:520px;width:calc(100% - 28px);box-shadow:0 20px 80px rgba(0,0,0,.55)}
+dialog::backdrop{background:rgba(0,0,0,.68);backdrop-filter:blur(3px)}
+.dlg{padding:16px}.dlg h3{margin:0 0 12px;font-size:16px}.dlg p{color:var(--dim);font-size:13px}.dlgrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.dlgrow button{flex:1}.check{display:flex;gap:9px;align-items:flex-start;color:var(--dim);font-size:13px;margin-top:10px}.check input{margin-top:3px}
+@media(max-width:559px){.cval{font-size:24px}.card{padding:10px 11px}.hrow{padding-left:12px;padding-right:12px}}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <div class="h1">Macro Dashboard <span id="stamp"></span></div>
+    <div class="hbtns">
+      <button id="btnRefresh">↻</button>
+      <button id="btnCfg">⚙</button>
+    </div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</header>
+<main id="main"></main>
+<div class="bar"><span class="dot" id="dot"></span><span id="status">bereit</span><span class="status-spacer"></span><span id="net"></span></div>
+<dialog id="cfgDialog">
+  <div class="dlg">
+    <h3>Dashboard-Einstellungen</h3>
+    <p>Die gehostete Version holt FRED-Daten über <code>/api/fred</code>. Der API-Key bleibt dabei serverseitig und landet nicht im Browser.</p>
+    <label class="check"><input type="checkbox" id="autoRefresh" checked><span>Beim Öffnen/Zurückkehren automatisch aktualisieren, wenn der lokale Datenstand älter als 30 Minuten ist.</span></label>
+    <div class="dlgrow"><button id="btnClear">Lokalen Cache leeren</button><button class="pri" id="btnCloseCfg">Schließen</button></div>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+/* ============================================================
+   MACRO DASHBOARD — Module 1–11
+   Datenquelle: FRED (Federal Reserve Bank of St. Louis)
+   ============================================================ */
+
+const APP_VERSION = "3.0";
+const API_ENDPOINT = "/api/fred";
+const CACHE_KEY = "macrodash:v3";
+const CACHE_TTL = 6 * 3600 * 1000;
+const VISIBLE_REFRESH_AFTER = 30 * 60 * 1000;
+const state = {
+  tab: "daily", data: {}, errors: {}, loading: new Set(),
+  updatedAt: {}, lastSync: 0, source: "", autoRefresh: true
+};
+
+/* ---------- Zahlenformat ---------- */
+const nf = (v,d=1)=> v==null||!isFinite(v) ? "–" : v.toLocaleString("de-DE",{minimumFractionDigits:d,maximumFractionDigits:d});
+const sgn = (v,d=1)=> v==null||!isFinite(v) ? "–" : (v>0?"+":"") + nf(v,d);
+const dmy = s => { if(!s) return "–"; const p=s.split("-"); return p[2]+"."+p[1]+"."+p[0]; };
+
+/* ============================================================
+   SERIEN-KATALOG
+   t: level | yoy | chg | mom_ann   sc: Skalierung   u: Einheit
+   sig: v => 'g'|'a'|'r'|''
+   ============================================================ */
+const S = {
+/* ---- GROWTH (Modul 2–3) ---- */
+A191RL1Q225SBEA:{n:"Real GDP (QoQ ann.)",t:"level",u:"%",d:1,sig:v=>v>2?'g':v>0?'a':'r',
+  note:"Reales BIP-Wachstum, Quartal annualisiert. >2% solide, 0–2% Abkühlung, negativ = Kontraktion. Achtung: 2 negative Quartale ≠ offizielle Rezession (NBER schaut auf Arbeitsmarkt+Income)."},
+PCEC96:{n:"Real PCE",t:"yoy",u:"% YoY",d:1,sig:v=>v>2?'g':v>1?'a':'r',
+  note:"Das Aggregat des Konsums — 68% des BIP. Trail-Indikator: bestätigt spät. Deine Hierarchie: Saving Rate → Durables → Retail Control → Real PCE → PCE Services."},
+DSPIC96:{n:"Real Disposable Income",t:"yoy",u:"% YoY",d:1,sig:v=>v>2?'g':v>0.5?'a':'r',
+  note:"Der Stamm. Fällt Real DPI, fällt alles andere — es sei denn, Haushalte greifen die Puffer an (Saving Rate ↓ oder Kredit ↑). Genau das trackst du gerade."},
+PSAVERT:{n:"Saving Rate",t:"level",u:"%",d:1,sig:v=>v>5?'g':v>3.5?'a':'r',
+  note:"Dein Verhaltens-Frühindikator. <3% = Notfallmodus, Konsum-Crash-Risiko in Monaten. Stabilisiert oder steigt sie plötzlich = Angst, Konsum bricht ab. Wird stark revidiert → Trend > Einzelwert."},
+RSAFS:{n:"Retail Sales",t:"yoy",u:"% YoY",d:1,sig:v=>v>4?'g':v>2?'a':'r',
+  note:"NOMINAL — immer gegen CPI YoY lesen. Bei 4% CPI ist +3% Retail real negativ."},
+RSXFS:{n:"Retail Sales ex Food Svc",t:"yoy",u:"% YoY",d:1,sig:v=>v>4?'g':v>2?'a':'r',
+  note:"Näher an der Control Group. Der Live-Puls des Konsums, monatlich, marktbewegend."},
+INDPRO:{n:"Industrial Production",t:"yoy",u:"% YoY",d:1,sig:v=>v>1?'g':v>-0.5?'a':'r',
+  note:"Harte Produktionsseite. Kippt typischerweise vor dem Arbeitsmarkt."},
+NEWORDER:{n:"Core Capital Goods Orders",t:"yoy",u:"% YoY",d:1,sig:v=>v>3?'g':v>0?'a':'r',
+  note:"Nondefense ex Aircraft — der sauberste Capex-Frühindikator. Firmen stoppen Bestellungen bevor sie entlassen."},
+ISRATIO:{n:"Inventories/Sales",t:"level",u:"x",d:2,sig:v=>v<1.35?'g':v<1.45?'a':'r',
+  note:"Steigt der Ratio, ist der Lageraufbau unfreiwillig → Produktionskürzung kommt. Klassischer Zyklus-Wendepunkt."},
+HOUST:{n:"Housing Starts",t:"level",u:"K SAAR",d:0,sig:v=>v>1400?'g':v>1250?'a':'r',
+  note:"Housing führt den Zyklus — zinssensitivster Sektor. Aber: Mechanismus-Transfer-Falle, Housing-Schwäche ≠ Gesamtwirtschaft-Schwäche."},
+PERMIT:{n:"Building Permits",t:"level",u:"K SAAR",d:0,sig:v=>v>1400?'g':v>1250?'a':'r',
+  note:"Läuft Starts um 1–2 Monate voraus. Die Absicht vor der Tat."},
+HSN1F:{n:"New Home Sales",t:"level",u:"K SAAR",d:0,sig:v=>v>680?'g':v>600?'a':'r',
+  note:"Am Zins-sensitivsten. Reagiert schneller als Existing Home Sales (dort blockiert der Lock-in-Effekt)."},
+EXHOSLUSM495S:{n:"Existing Home Sales",t:"level",u:"Mio SAAR",d:2,sc:1e-6,sig:v=>v>4.5?'g':v>4?'a':'r',
+  note:"Lock-in: wer 3% Hypothek hat, zieht nicht um. Deshalb historisch niedriges Volumen trotz stabiler Preise."},
+MORTGAGE30US:{n:"30Y Mortgage Rate",t:"level",u:"%",d:2,sig:v=>v<6?'g':v<7?'a':'r',
+  note:"Der eigentliche Transmissionspreis ins Housing. Folgt der 10Y + Spread, nicht der Fed Funds Rate."},
+UMCSENT:{n:"UMich Sentiment",t:"level",u:"Idx",d:1,sig:v=>v>80?'g':v>65?'a':'r',
+  note:"Soft Data — directional, nicht prognostisch. Immer gegen Hard Data gegenlesen. Politische Verzerrung seit 2021 massiv."},
+OPHNFB:{n:"Produktivität (Output/Hour)",t:"yoy",u:"% YoY",d:1,sig:v=>v>2?'g':v>1?'a':'r',
+  note:"Potential GDP = Labor Force Growth + Produktivität. Da Labor Force ~0 wächst, hängt das gesamte US-Potenzial daran. AI-Frage in einer Zahl."},
+TCU:{n:"Capacity Utilization",t:"level",u:"%",d:1,sig:v=>v>79?'g':v>77?'a':'r',
+  note:"Auslastung. Unter ~77% historisch Rezessionsnähe."},
+
+/* ---- LABOR (Modul 5–6) ---- */
+PAYEMS:{n:"Nonfarm Payrolls",t:"chg",u:"K",d:0,sig:v=>v>100?'g':v>20?'a':'r',
+  note:"NICHT gegen die alte 150K-Regel benchmarken. Breakeven 2026 ≈ 10–40K wegen Migrationskollaps + Alterung. −20K ist heute Achselzucken, nicht Panik. Signifikanzschwelle MoM ≈ ±122K."},
+UNRATE:{n:"U-3 Arbeitslosenquote",t:"level",u:"%",d:1,sig:v=>v<4.2?'g':v<4.6?'a':'r',
+  note:"U-3 lügt: kann aus gutem (Jobs) oder schlechtem Grund (Suche aufgegeben) fallen. Immer mit Participation + U-6 gegenlesen. Kommt NIE aus dem Payroll Survey."},
+U6RATE:{n:"U-6 (Unterbeschäftigung)",t:"level",u:"%",d:1,sig:v=>v<8?'g':v<9?'a':'r',
+  note:"Inkl. Entmutigte + unfreiwillig Teilzeit. Die Lücke U6−U3 weitet sich vor dem Bruch."},
+SAHMREALTIME:{n:"Sahm Rule",t:"level",u:"pp",d:2,sig:v=>v<0.3?'g':v<0.5?'a':'r',
+  note:"3-Mo-Schnitt U-3 ≥0,5pp über 12-Mo-Tief = Rezession. 3/3 echte Rezessionen erwischt, 1 Fehlalarm 2024 (Angebot statt Nachfrage). Trigger IMMER gegen das WARUM prüfen."},
+CIVPART:{n:"Participation Rate",t:"level",u:"%",d:1,sig:v=>v>62.5?'g':v>62?'a':'r',
+  note:"Demografisch nach unten gezogen (Boomer). Deshalb Prime-Age als Entlüger nutzen."},
+LNS11300060:{n:"Prime-Age Participation (25–54)",t:"level",u:"%",d:1,sig:v=>v>83?'g':v>82?'a':'r',
+  note:"Entlügt den Demografie-Effekt. Fällt DAS, ist es echte Nachfrageschwäche."},
+EMRATIO:{n:"Employment-Population Ratio",t:"level",u:"%",d:1,sig:v=>v>60?'g':v>59?'a':'r',
+  note:"Bestandsmaß ohne Participation-Verzerrung."},
+ICSA:{n:"Initial Claims",t:"level",u:"K",d:0,sc:1e-3,sig:v=>v<240?'g':v<280?'a':'r',
+  note:"Harte Verwaltungsdaten, wöchentlich, kaum revidiert. Misst das ENTLASSUNGSTEMPO. Dein rauschärmstes Signal."},
+IC4WSA:{n:"Initial Claims 4W-Schnitt",t:"level",u:"K",d:0,sc:1e-3,sig:v=>v<240?'g':v<280?'a':'r',
+  note:"Die Linie, auf die du eigentlich schaust. >250K ist deine Schwelle; nachhaltig >300K = Regimewechsel."},
+CCSA:{n:"Continuing Claims",t:"level",u:"Mio",d:2,sc:1e-6,sig:v=>v<1.85?'g':v<2?'a':'r',
+  note:"Misst die WIEDEREINSTELLUNGS-Schwierigkeit. Initial flach + Continuing steigend = 'Low-Fire, aber die Tür raus klemmt'. Genau dein aktuelles Regime."},
+JTSJOL:{n:"JOLTS Job Openings",t:"level",u:"Mio",d:2,sc:1e-3,sig:v=>v>8?'g':v>7?'a':'r',
+  note:"Nachfrageseite. Aber: Openings ≠ Hires. Du hast selbst getestet — Openings-Spikes prognostizieren KEINE künftigen Hires (Korrelation ≈0 auf allen Lags)."},
+JTSHIL:{n:"JOLTS Hires",t:"level",u:"Mio",d:2,sc:1e-3,sig:v=>v>5.5?'g':v>5?'a':'r',
+  note:"Die Zahl, die wirklich zählt. Hires/Openings strukturell gefallen von ~1,17 (pre-2020) auf ~0,67."},
+JTSQUR:{n:"Quits Rate",t:"level",u:"%",d:1,sig:v=>v>2.3?'g':v>2?'a':'r',
+  note:"Das Vertrauensbarometer der Arbeitnehmer. ~2,0% = gefangen. Der ehrlichste Tightness-Indikator, weil er Verhalten misst, nicht Meinung."},
+JTSLDR:{n:"Layoffs Rate",t:"level",u:"%",d:1,sig:v=>v<1.1?'g':v<1.3?'a':'r',
+  note:"DEIN REGIME-TRIGGER. Solange die flach bleibt, ist es 'eingefroren'. Dreht sie nach oben, kippt es von frozen zu recessionary — und Arbeitsmärkte drehen nicht linear, sie reißen."},
+CES0500000003:{n:"Average Hourly Earnings",t:"yoy",u:"% YoY",d:2,sig:v=>v>4?'g':v>3.5?'a':'r',
+  note:"Mit Composition-Bias behaftet. ECI ist sauberer, aber quartalsweise. Gegen CPI rechnen → Reallohn."},
+ECIWAG:{n:"Employment Cost Index (Wages)",t:"yoy",u:"% YoY",d:1,sig:v=>v<3.5?'g':v<4?'a':'r',
+  note:"Fed-Favorit: kontrolliert für Composition. Konsistent mit 2% Inflation wäre ~3,5% (bei 1,5% Produktivität)."},
+ULCNFB:{n:"Unit Labor Costs",t:"yoy",u:"% YoY",d:1,sig:v=>v<2?'g':v<3.5?'a':'r',
+  note:"ULC = Lohnwachstum − Produktivität. DIE Brücke Arbeitsmarkt→Inflation. Hohe Löhne sind inflationär nur, wenn Produktivität nicht mithält."},
+AWHAETP:{n:"Wochenarbeitszeit",t:"level",u:"h",d:1,sig:v=>v>34.3?'g':v>34?'a':'r',
+  note:"Firmen kürzen Stunden bevor sie Köpfe kürzen. Stiller Frühindikator vor der Entlassungswelle."},
+CLF16OV:{n:"Labor Force (Veränderung)",t:"chg",u:"K",d:0,sig:v=>v>50?'g':v>0?'a':'r',
+  note:"Der Breakeven-Motor. Nahe null 2026 → Angebot demografisch eingefroren. Deshalb ist U-3 ein schlechterer Frühindikator geworden — Schwäche zeigt sich in FLOWS."},
+UNEMPLOY:{n:"Arbeitslose (Level)",t:"level",u:"Mio",d:2,sc:1e-3,sig:v=>v<7?'g':v<7.5?'a':'r',
+  note:"Nenner für das V/U-Ratio."},
+
+/* ---- INFLATION (Modul 7–8) ---- */
+CPIAUCSL:{n:"CPI Headline",t:"yoy",u:"% YoY",d:1,sig:v=>v<2.5?'g':v<3.5?'a':'r',
+  note:"Nicht das Fed-Ziel. Headline−Core-Lücke groß = Energie/Food-Schock = Cost-Push, tendenziell durchschauen."},
+CPILFESL:{n:"Core CPI",t:"yoy",u:"% YoY",d:1,sig:v=>v<2.5?'g':v<3.2?'a':'r',
+  note:"34% Shelter-Gewicht → OER-Lag verzerrt. Deshalb ist Core CPI träger als Core PCE."},
+PCEPI:{n:"PCE Headline",t:"yoy",u:"% YoY",d:1,sig:v=>v<2.3?'g':v<3?'a':'r',
+  note:"BEA, ~Ende des Folgemonats."},
+PCEPILFE:{n:"Core PCE ★",t:"yoy",u:"% YoY",d:1,sig:v=>v<2.3?'g':v<3?'a':'r',
+  note:"DAS Fed-Ziel (2%). Substitution erlaubt, weniger Shelter-Gewicht, misst tatsächliche Ausgaben. Deine offene Frage: Trajektorie, wenn die Energie-Basiseffekte rausrollen."},
+PCETRIM12M159SFRBDAL:{n:"Trimmed Mean PCE",t:"level",u:"% YoY",d:1,sig:v=>v<2.3?'g':v<3?'a':'r',
+  note:"Dallas Fed — schneidet Extreme weg. Zeigt den Kern des Kerns, immun gegen Einzelschocks."},
+CORESTICKM159SFRBATL:{n:"Sticky Core CPI",t:"level",u:"% YoY",d:1,sig:v=>v<2.5?'g':v<3.5?'a':'r',
+  note:"Atlanta Fed — nur die trägen Komponenten. Steigt die, ist Inflation strukturell, nicht Schock."},
+CUSR0000SAH1:{n:"Shelter CPI",t:"yoy",u:"% YoY",d:1,sig:v=>v<3.5?'g':v<4.5?'a':'r',
+  note:"Der OER-Lag: neuer Mietmarkt dreht 12–18 Monate früher. 2022–24 die teuerste Falle für Duration-Trades."},
+CUSR0000SASLE:{n:"Services ex Energy",t:"yoy",u:"% YoY",d:1,sig:v=>v<3?'g':v<4?'a':'r',
+  note:"Hier steckt die Lohn-Preis-Dynamik. Der persistente Teil."},
+CUSR0000SACL1E:{n:"Core Goods",t:"yoy",u:"% YoY",d:1,sig:v=>v<1?'g':v<2?'a':'r',
+  note:"Güter deflationär = Supply Chains normal. Güter wieder inflationär = Zölle / FX Pass-Through."},
+CPIENGSL:{n:"Energie CPI",t:"yoy",u:"% YoY",d:1,sig:v=>v<3?'g':v<10?'a':'r',
+  note:"Der Cost-Push-Motor 2026. Ein Angebotsschock verlangt die GEGENTEILIGE Politik eines Nachfrageschocks — bei gleichem Preisniveau."},
+CPIUFDSL:{n:"Food CPI",t:"yoy",u:"% YoY",d:1,sig:v=>v<3?'g':v<4.5?'a':'r',note:"Politisch am sichtbarsten, geldpolitisch am irrelevantesten."},
+PPIFIS:{n:"PPI Final Demand",t:"yoy",u:"% YoY",d:1,sig:v=>v<2.5?'g':v<4?'a':'r',
+  note:"Stufe 2 der Pass-Through-Kette Importpreise → PPI → CPI. Margendruck zuerst hier sichtbar."},
+IR:{n:"Import Prices",t:"yoy",u:"% YoY",d:1,sig:v=>v<2?'g':v<4?'a':'r',
+  note:"Stufe 1 der FX-Pass-Through-Kette. Erster Ort, wo ein schwacher Dollar / Zölle auftauchen."},
+T5YIE:{n:"5Y Breakeven",t:"level",u:"%",d:2,sig:v=>v<2.4?'g':v<2.7?'a':'r',note:"Markterwartete Inflation 5J. Kurzes Ende = Schock-empfindlich."},
+T10YIE:{n:"10Y Breakeven",t:"level",u:"%",d:2,sig:v=>v<2.4?'g':v<2.6?'a':'r',
+  note:"2,0–2,5% = verankert, Fed glaubwürdig. >2,5% und steigend = Warnsignal. Glaubwürdigkeit ist der Dämpfer der Second-Round-Effekte."},
+T5YIFR:{n:"5Y5Y Forward",t:"level",u:"%",d:2,sig:v=>v<2.4?'g':v<2.6?'a':'r',
+  note:"Der sauberste Anker-Test: Inflation in 5–10 Jahren, immun gegen aktuelle Schocks. Bewegt sich DAS, ist die Verankerung weg."},
+MICH:{n:"UMich 1Y Erwartung",t:"level",u:"%",d:1,sig:v=>v<3?'g':v<4?'a':'r',
+  note:">4% und steigend = Konsumenten glauben der Fed nicht mehr → Spiralen-Risiko. 5Y-Sprung ist das eigentliche Alarmsignal."},
+
+/* ---- POLICY & RATES (Modul 9) ---- */
+DFEDTARU:{n:"Fed Funds Target (oben)",t:"level",u:"%",d:2,sig:()=>'',note:"Die Fed setzt ein BAND, keinen Zins. Sie zielt, sie dekretiert nicht."},
+DFF:{n:"Effective Fed Funds (EFFR)",t:"level",u:"%",d:2,sig:()=>'',note:"Der echte Preis von Übernacht-Geld. Muss im Band liegen — sonst hat die Fed ein Kontrollproblem."},
+IORB:{n:"IORB",t:"level",u:"%",d:2,sig:()=>'',note:"Die Obergrenze des rate cage im Floor-System. Banken verleihen nicht unter dem, was die Fed risikofrei zahlt."},
+SOFR:{n:"SOFR",t:"level",u:"%",d:2,sig:()=>'',note:"Besicherte Overnight-Finanzierung — hier refinanziert sich das System jede Nacht. Springt SOFR über IORB, klemmen die Rohre."},
+DGS3MO:{n:"3M Treasury",t:"level",u:"%",d:2,sig:()=>''},
+DGS2:{n:"2Y Treasury",t:"level",u:"%",d:2,sig:()=>'',note:"Die Fed-Erwartungs-Laufzeit. Bewegt sich vor der Fed."},
+DGS10:{n:"10Y Treasury",t:"level",u:"%",d:2,sig:()=>'',note:"= Erwartete Kurzzinsen + Term Premium. Steigt sie ohne Zinserwartungs-Anstieg, ist es Term Premium (Fiskal-/Angebotssorge)."},
+DGS30:{n:"30Y Treasury",t:"level",u:"%",d:2,sig:()=>'',note:"Fiskal-Thermometer. Bear Steepening am langen Ende = Käuferstreik-Signal (UK Gilt 2022 als Blaupause)."},
+T10Y2Y:{n:"Kurve 10Y−2Y",t:"level",u:"pp",d:2,sig:v=>v>0.5?'g':v>0?'a':'r',
+  note:"Invers = Rezessionswarnung, aber der Trigger ist historisch die RE-Steepening aus der Inversion heraus, nicht die Inversion selbst."},
+T10Y3M:{n:"Kurve 10Y−3M",t:"level",u:"pp",d:2,sig:v=>v>0.5?'g':v>0?'a':'r',note:"Der akademisch beste Rezessions-Prädiktor (NY Fed Modell)."},
+DFII10:{n:"10Y Realzins (TIPS)",t:"level",u:"%",d:2,sig:v=>v<1.5?'g':v<2.2?'a':'r',
+  note:"Der Zins, der wirklich restriktiv wirkt. Realzins > r* = Bremse. Der Diskontsatz für jede Aktienbewertung."},
+WALCL:{n:"Fed-Bilanz",t:"level",u:"Bio $",d:2,sc:1e-6,sig:()=>'',note:"QT beendet Dez 2025. Die Größe ist weniger wichtig als die Reserven-Knappheit darunter."},
+WRESBAL:{n:"Bankreserven",t:"level",u:"Mrd $",d:0,sig:v=>v>3000?'g':v>2800?'a':'r',
+  note:"Wo auf der Reserve-Nachfragekurve sitzt das System? Nähe zum LCLoR-Knick entscheidet, wie nah Funding-Stress ist."},
+RRPONTSYD:{n:"ON RRP",t:"level",u:"Mrd $",d:0,sig:v=>v>150?'g':v>50?'a':'r',
+  note:"Dein Frühwarn-Puffer. Läuft der gegen null, ist der Stoßdämpfer weg — dann trifft QT direkt die Reserven."},
+WTREGEN:{n:"Treasury General Account",t:"level",u:"Mrd $",d:0,sig:()=>'',
+  note:"TGA-Aufbau saugt Liquidität aus dem System (Reserven ↓), TGA-Abbau spült sie rein. Nach Debt-Ceiling-Deals der Haupttreiber."},
+
+/* ---- CREDIT & LIQUIDITY (Modul 10) ---- */
+BAMLH0A0HYM2:{n:"HY OAS ★",t:"level",u:"%",d:2,sig:v=>v<3.5?'g':v<5?'a':'r',
+  note:"Der Puls des Risikoappetits. Spread = Expected Loss (PD×LGD) + Risikoprämie — die Prämie ist marktgesetzt und bewegt sich UNABHÄNGIG von der Fed. Dein Falsifikations-Trigger: nachhaltig >2σ Widening + IG zieht mit."},
+BAMLC0A0CM:{n:"IG OAS",t:"level",u:"%",d:2,sig:v=>v<1.2?'g':v<1.7?'a':'r',
+  note:"Wenn IG mitzieht, ist es keine Sektor-Story mehr, sondern systemisch."},
+BAMLH0A3HYC:{n:"CCC OAS",t:"level",u:"%",d:2,sig:v=>v<8?'g':v<11?'a':'r',note:"Das schwächste Glied. Bricht zuerst — Vorlauf zum HY-Index."},
+BAMLEMCBPIOAS:{n:"EM Corporate OAS",t:"level",u:"%",d:2,sig:v=>v<3?'g':v<4.5?'a':'r',
+  note:"Dein EMBI-Ersatz. Teil des Dollar-Smile-Klassifikators (VIX-UND-EM-Konjunktion). Dollar-Stärke straft dollarverschuldete EM → Wrecking Ball."},
+BAA10Y:{n:"Baa − 10Y Spread",t:"level",u:"pp",d:2,sig:v=>v<2?'g':v<2.5?'a':'r',note:"Die lange Historie (bis 1986) — gut für historische Perzentile."},
+NFCI:{n:"Financial Conditions (NFCI) ★",t:"level",u:"σ",d:2,sig:v=>v<-0.2?'g':v<0.2?'a':'r',
+  note:"Der Gesamtoutput von Modul 10. 0 = Durchschnitt, >0 = straffer als normal. Die Pointe: Conditions können sich GEGENLÄUFIG zum Leitzins bewegen — dort bricht die Transmission."},
+ANFCI:{n:"NFCI (adjustiert)",t:"level",u:"σ",d:2,sig:v=>v<-0.2?'g':v<0.2?'a':'r',note:"Bereinigt um Konjunktur — zeigt Stress, der NICHT vom Zyklus erklärt wird."},
+STLFSI4:{n:"St. Louis Fed Stress Index",t:"level",u:"σ",d:2,sig:v=>v<0?'g':v<1?'a':'r',note:"Zweite Meinung zum NFCI. Divergenz = genauer hinschauen."},
+DRTSCILM:{n:"SLOOS: C&I Standards",t:"level",u:"% netto",d:1,sig:v=>v<0?'g':v<10?'a':'r',
+  note:"STOCK vs FLOW: misst die VERÄNDERUNG der Standards, nicht das Niveau. Monate bei +10% = kumulativ sehr straff, auch wenn 'nur' 10%. Quartalsweise, ~3 Wochen nach Quartalsende."},
+DRTSCLCC:{n:"SLOOS: Kreditkarten-Standards",t:"level",u:"% netto",d:1,sig:v=>v<0?'g':v<10?'a':'r',note:"Konsum-Frühwarnung, 2–3 Quartale Vorlauf."},
+BUSLOANS:{n:"C&I Loans",t:"yoy",u:"% YoY",d:1,sig:v=>v>3?'g':v>0?'a':'r',
+  note:"Die Mengenseite. Banken vermitteln Kredit nicht — sie SCHÖPFEN ihn. Constraint ist Kapital/Risikoappetit/Nachfrage, nicht Reserven."},
+TOTALSL:{n:"Consumer Credit",t:"yoy",u:"% YoY",d:1,sig:v=>v>3?'g':v>1?'a':'r',note:"Der dritte Puffer vor dem Konsum-Kollaps (nach Income und Ersparnis)."},
+REVOLSL:{n:"Revolving Credit (Karten)",t:"yoy",u:"% YoY",d:1,sig:v=>v<6?'g':v<9?'a':'r',
+  note:"Explodiert das bei fallendem Real-Income, ist es Stress-Verschuldung, nicht Konfidenz."},
+TDSP:{n:"Debt Service Ratio (gesamt)",t:"level",u:"%",d:2,sig:v=>v<10?'g':v<11.5?'a':'r',note:"Wieviel vom verfügbaren Einkommen in Schuldendienst geht. Fix-vs-Floating entscheidet über den Lag."},
+FODSP:{n:"Financial Obligations Ratio",t:"level",u:"%",d:2,sig:v=>v<14?'g':v<15.5?'a':'r',note:"Breiter als TDSP — inkl. Miete, Leasing, Versicherung."},
+DRCCLACBS:{n:"Delinquency Kreditkarten",t:"level",u:"%",d:2,sig:v=>v<2.5?'g':v<3.5?'a':'r',
+  note:"Das HARTE Bestätigungssignal am Ende der Kette. Umfragen können lügen, Zahlungsausfälle nicht."},
+DRALACBS:{n:"Delinquency alle Kredite",t:"level",u:"%",d:2,sig:v=>v<1.6?'g':v<2.2?'a':'r',note:"Aggregat-Bestätigung."},
+DRSFRMACBS:{n:"Delinquency Hypotheken",t:"level",u:"%",d:2,sig:v=>v<2?'g':v<3?'a':'r',note:"Träger als Karten — Haushalte priorisieren das Dach über dem Kopf zuletzt."},
+
+/* ---- EXTERNAL (Modul 11) ---- */
+DTWEXBGS:{n:"Dollar Index (broad) ★",t:"level",u:"Idx",d:2,sig:()=>'',
+  note:"Dollar Smile: LINKS = Panik/Safe-Haven, RECHTS = Carry/Wachstum, MITTE = schwacher Dollar. Dollar-Stärke strafft globale Financial Conditions über dollarverschuldete Schuldner (Wrecking Ball). Circuit Breaker sind Fed-Swap-Lines."},
+DEXUSEU:{n:"EUR/USD",t:"level",u:"$",d:4,sig:()=>'',note:"USD pro EUR. Steigt = EUR stärker. Für dich die Fakturierungswährung, die bei Öl wirklich zählt."},
+DEXJPUS:{n:"USD/JPY",t:"level",u:"¥",d:2,sig:()=>'',
+  note:"Fallend = Yen STÄRKER = schlecht für Short-Yen-Carry. Unwind ist reflexiv: erzwungene Yen-Käufe stärken den Yen weiter + gleichzeitige Asset-Liquidation → Korrelation gegen 1. Anker: 5. August 2024."},
+DEXCHUS:{n:"USD/CNY",t:"level",u:"¥",d:4,sig:()=>'',note:"Managed Float. Die PBoC-Fixings sind das eigentliche Signal, nicht der Spot."},
+DEXUSUK:{n:"GBP/USD",t:"level",u:"$",d:4,sig:()=>''},
+DCOILBRENTEU:{n:"Brent",t:"level",u:"$",d:2,sig:v=>v<75?'g':v<95?'a':'r',
+  note:"Master-Commodity. Entscheidend: ANGEBOTS- oder Nachfrageschock? Gleicher Preis, gegenteilige Regime-Implikation. Deine Falsifikation: Brent zurück auf ~80 = Cost-Push-These entschärft."},
+DCOILWTICO:{n:"WTI",t:"level",u:"$",d:2,sig:v=>v<72?'g':v<92?'a':'r',note:"US-Benchmark. Der Brent-WTI-Spread ist Logistik, nicht Makro."},
+GASREGW:{n:"Benzinpreis US",t:"level",u:"$/gal",d:2,sig:v=>v<3.3?'g':v<4?'a':'r',
+  note:"Der sichtbarste Preis für Konsumenten → treibt Inflationserwartungen stärker als jede andere Einzelposition. Net-exporter ≠ consumer shield."},
+PCOPPUSDM:{n:"Kupfer",t:"level",u:"$/t",d:0,sig:()=>'',
+  note:"Wachstums-vs-Angst-Barometer (klassisch Kupfer/Gold). Aktuell kontaminiert durch AI-/Elektrifizierungs-Nachfrage und Zoll-Frontrunning."},
+BOPGSTB:{n:"Handelsbilanz",t:"level",u:"Mrd $",d:1,sc:1e-3,sig:()=>'',
+  note:"Current Account + Financial Account = 0. Ein Defizit importiert per Definition Kapital — Dollar-Nachfrage und US-Asset-Nachfrage sind siamesische Zwillinge."},
+
+/* ---- EUROPA / ÖSTERREICH ---- */
+ECBDFR:{n:"EZB Einlagensatz",t:"level",u:"%",d:2,sig:()=>'',
+  note:"Der eigentliche Leitzins im Floor-System der EZB. Juni 2026 erste Anhebung seit 2023 — in einen Cost-Push-Schock hinein."},
+ECBMRRFR:{n:"EZB Hauptrefi",t:"level",u:"%",d:2,sig:()=>''},
+CP0000EZ19M086NEST:{n:"Euroraum HICP",t:"yoy",u:"% YoY",d:1,sig:v=>v<2.2?'g':v<3?'a':'r',
+  note:"Terms-of-Trade-Schock: der Euroraum ist Netto-Energie-IMPORTEUR. Öl hoch = Realeinkommen-Transfer ins Ausland. Genau die Diagnose gerade."},
+CP0000EZCCM086NEST:{n:"Euroraum HICP (chg. comp.)",t:"yoy",u:"% YoY",d:1,sig:v=>v<2.2?'g':v<3?'a':'r',
+  note:"Variante mit wechselnder Zusammensetzung — Fallback, falls die EA19-Reihe hakt. Eurostat-Reihen auf FRED laufen oft 1–2 Monate hinterher; für taggenaue Zahlen direkt zu Eurostat/EZB."},
+LRHUTTTTEZM156S:{n:"Euroraum Arbeitslosigkeit",t:"level",u:"%",d:1,sig:v=>v<6.5?'g':v<7.5?'a':'r'},
+IRLTLT01DEM156N:{n:"Bund 10Y",t:"level",u:"%",d:2,sig:()=>'',note:"Der Euro-Benchmark. Der BTP-Bund-Spread ist das Fragmentierungs-Thermometer."},
+IRLTLT01ATM156N:{n:"Österreich 10Y",t:"level",u:"%",d:2,sig:()=>''},
+CLVMNACSCAB1GQEA19:{n:"Euroraum Real GDP",t:"yoy",u:"% YoY",d:1,sig:v=>v>1.5?'g':v>0?'a':'r'},
+CP0000ATM086NEST:{n:"Österreich HICP",t:"yoy",u:"% YoY",d:1,sig:v=>v<2.2?'g':v<3?'a':'r',
+  note:"Kleine offene Volkswirtschaft: du importierst den fremden Zyklus über die Kette Deutschland→Österreich."},
+
+/* ---- MÄRKTE ---- */
+SP500:{n:"S&P 500",t:"level",u:"",d:0,sig:()=>''},
+NASDAQCOM:{n:"Nasdaq Composite",t:"level",u:"",d:0,sig:()=>''},
+VIXCLS:{n:"VIX",t:"level",u:"",d:2,sig:v=>v<18?'g':v<25?'a':'r',
+  note:"Teil deines Dollar-Smile-Klassifikators. Die VIX-UND-EM-Konjunktion war die Verschärfung, die 2014-15 und 2022 korrekt reklassifiziert hat."},
+DJIA:{n:"Dow Jones",t:"level",u:"",d:0,sig:()=>''}
+};
+
+/* ---------- ABGELEITETE KENNZAHLEN ---------- */
+const D = {
+  VU:{n:"V/U Ratio",ids:["JTSJOL","UNEMPLOY"],u:"x",d:2,sig:v=>v>1.2?'g':v>0.9?'a':'r',
+    note:"Offene Stellen pro Arbeitslosem — der beste Tightness-Messer. 2022 ~2,0, heute ~1,0. Unter 1,0 = mehr Sucher als Stellen.",
+    fn:(a,b)=>ratio(a,b)},
+  HO:{n:"Hires / Openings",ids:["JTSHIL","JTSJOL"],u:"x",d:2,sig:v=>v>0.9?'g':v>0.75?'a':'r',
+    note:"Deine eigene Metrik. Strukturell gefallen von ~1,17 (pre-2020) auf ~0,67 — Stellen werden ausgeschrieben, aber nicht besetzt. 'Phantom listings' ODER echtes Einfrieren: konsistent ≠ bestätigt.",
+    fn:(a,b)=>ratio(a,b)},
+  REALW:{n:"Reallohn (AHE − CPI)",ids:["CES0500000003","CPIAUCSL"],u:"pp",d:2,sig:v=>v>1?'g':v>0?'a':'r',
+    note:"Negativ = Kaufkraft schrumpft. Genau der Kern deiner Konsum-Stress-These: Real Wages negativ + Saving Rate leer = kein Puffer mehr.",
+    fn:(a,b)=>diffYoY(a,b)},
+  SOFRIORB:{n:"SOFR − IORB ★",ids:["SOFR","IORB"],u:"bp",d:0,sig:v=>v<5?'g':v<15?'a':'r',
+    note:"Das Haupt-Thermometer der Plumbing. Springt SOFR nachhaltig über IORB, reißt der Funding-Markt. Anker: Sept 2019 (Repo-Spike mitten in QT), März 2020 (dash for cash).",
+    fn:(a,b)=>diffLevel(a,b,100)},
+  U6U3:{n:"U-6 − U-3 Lücke",ids:["U6RATE","UNRATE"],u:"pp",d:1,sig:v=>v<3.6?'g':v<4?'a':'r',
+    note:"Weitet sich vor dem Bruch: Leute rutschen erst in Teilzeit/Entmutigung, bevor sie als arbeitslos gezählt werden.",
+    fn:(a,b)=>diffLevel(a,b,1)},
+  RGAP:{n:"Realzins − Core PCE",ids:["DFII10","PCEPILFE"],u:"pp",d:2,sig:()=>'',
+    note:"Grober Restriktivitäts-Check. Realzins deutlich über r* (~0,5–1%) = Bremse aktiv."},
+};
+function alignPairs(a,b){const m=new Map(b.map(o=>[o.date,o.value]));const out=[];
+  for(const o of a){if(m.has(o.date))out.push({date:o.date,x:o.value,y:m.get(o.date)});}
+  if(out.length<3){ // Frequenzen mischen: b auf a mappen (letzter bekannter Wert)
+    const out2=[];let j=0;
+    for(const o of a){while(j+1<b.length&&b[j+1].date<=o.date)j++;
+      if(b[j]&&b[j].date<=o.date)out2.push({date:o.date,x:o.value,y:b[j].value});}
+    return out2;}
+  return out;}
+const ratio=(a,b)=>alignPairs(a,b).map(p=>({date:p.date,value:p.y?p.x/p.y:null})).filter(p=>p.value!=null);
+const diffLevel=(a,b,m)=>alignPairs(a,b).map(p=>({date:p.date,value:(p.x-p.y)*m}));
+function diffYoY(a,b){const ya=toYoY(a),yb=toYoY(b);return alignPairs(ya,yb).map(p=>({date:p.date,value:p.x-p.y}));}
+
+/* ---------- TABS ---------- */
+const TABS = [
+ {id:"daily",  label:"Daily Check"},
+ {id:"growth", label:"Wachstum"},
+ {id:"labor",  label:"Arbeitsmarkt"},
+ {id:"inflation",label:"Inflation"},
+ {id:"policy", label:"Policy & Zinsen"},
+ {id:"credit", label:"Credit & Liquidity"},
+ {id:"external",label:"External / FX"},
+ {id:"europe", label:"Europa / AT"},
+ {id:"markets",label:"Märkte"},
+ {id:"custom", label:"Eigene"},
+ {id:"info",   label:"Kalender & Notizen"}
+];
+
+const LAYOUT = {
+ daily:[
+  {t:"Regime", special:"regime"},
+  {t:"Arbeitsmarkt — dein Kipp-Trigger", items:["JTSLDR","IC4WSA","CCSA","d:VU","SAHMREALTIME","JTSQUR"]},
+  {t:"Konsum — die Puffer-These", items:["PSAVERT","DSPIC96","d:REALW","REVOLSL","DRCCLACBS","RSXFS"]},
+  {t:"Inflation — Core-Trajektorie", items:["PCEPILFE","CORESTICKM159SFRBATL","T5YIFR","CPIENGSL","DCOILBRENTEU","CUSR0000SASLE"]},
+  {t:"Financial Conditions", items:["NFCI","BAMLH0A0HYM2","BAMLC0A0CM","d:SOFRIORB","RRPONTSYD","VIXCLS"]},
+  {t:"Rates & Dollar", items:["DFEDTARU","DGS10","DFII10","T10Y2Y","DTWEXBGS","DEXJPUS"]}
+ ],
+ growth:[
+  {t:"Aggregat", items:["A191RL1Q225SBEA","INDPRO","TCU","OPHNFB"]},
+  {t:"Konsum (Modul 2)", items:["PCEC96","DSPIC96","PSAVERT","RSXFS","RSAFS","d:REALW","UMCSENT"]},
+  {t:"Investment & Inventories", items:["NEWORDER","ISRATIO"]},
+  {t:"Housing", items:["HOUST","PERMIT","HSN1F","EXHOSLUSM495S","MORTGAGE30US"]}
+ ],
+ labor:[
+  {t:"Bestand (Stock)", items:["PAYEMS","UNRATE","U6RATE","d:U6U3","SAHMREALTIME","EMRATIO"]},
+  {t:"Flows — dein Frühwarnsystem", items:["ICSA","IC4WSA","CCSA","JTSJOL","JTSHIL","JTSQUR","JTSLDR","d:VU","d:HO"]},
+  {t:"Angebot (Supply)", items:["CLF16OV","CIVPART","LNS11300060","UNEMPLOY"]},
+  {t:"Preis der Arbeit", items:["CES0500000003","ECIWAG","ULCNFB","AWHAETP","d:REALW"]}
+ ],
+ inflation:[
+  {t:"Headline & Core", items:["CPIAUCSL","CPILFESL","PCEPI","PCEPILFE","PCETRIM12M159SFRBDAL","CORESTICKM159SFRBATL"]},
+  {t:"Komponenten", items:["CUSR0000SAH1","CUSR0000SASLE","CUSR0000SACL1E","CPIENGSL","CPIUFDSL"]},
+  {t:"Pipeline (Pass-Through)", items:["IR","PPIFIS"]},
+  {t:"Erwartungen — der Anker", items:["T5YIE","T10YIE","T5YIFR","MICH"]}
+ ],
+ policy:[
+  {t:"Der rate cage", items:["DFEDTARU","DFF","IORB","SOFR","d:SOFRIORB"]},
+  {t:"Kurve", items:["DGS3MO","DGS2","DGS10","DGS30","T10Y2Y","T10Y3M","DFII10","d:RGAP"]},
+  {t:"Bilanz & Plumbing", items:["WALCL","WRESBAL","RRPONTSYD","WTREGEN"]}
+ ],
+ credit:[
+  {t:"Spreads (A3)", items:["BAMLH0A0HYM2","BAMLC0A0CM","BAMLH0A3HYC","BAMLEMCBPIOAS","BAA10Y"]},
+  {t:"Financial Conditions (Synthese)", items:["NFCI","ANFCI","STLFSI4"]},
+  {t:"Standards & Menge (A2/A4)", items:["DRTSCILM","DRTSCLCC","BUSLOANS","TOTALSL","REVOLSL"]},
+  {t:"Schuldner-Seite (A5)", items:["TDSP","FODSP","DRCCLACBS","DRALACBS","DRSFRMACBS"]},
+  {t:"Plumbing (B1–B3)", items:["SOFR","IORB","d:SOFRIORB","WRESBAL","RRPONTSYD","WTREGEN"]}
+ ],
+ external:[
+  {t:"Dollar & FX", items:["DTWEXBGS","DEXUSEU","DEXJPUS","DEXCHUS","DEXUSUK"]},
+  {t:"Rohstoffe", items:["DCOILBRENTEU","DCOILWTICO","GASREGW","PCOPPUSDM"]},
+  {t:"Trade & Pass-Through", items:["BOPGSTB","IR"]},
+  {t:"Risiko-Konjunktion (Dollar Smile)", items:["VIXCLS","BAMLEMCBPIOAS"]}
+ ],
+ europe:[
+  {t:"EZB", items:["ECBDFR","ECBMRRFR"]},
+  {t:"Inflation & Konjunktur", items:["CP0000EZ19M086NEST","CP0000EZCCM086NEST","CP0000ATM086NEST","CLVMNACSCAB1GQEA19","LRHUTTTTEZM156S"]},
+  {t:"Zinsen", items:["IRLTLT01DEM156N","IRLTLT01ATM156N","DEXUSEU"]}
+ ],
+ markets:[
+  {t:"Indizes & Vola", items:["SP500","NASDAQCOM","DJIA","VIXCLS"]},
+  {t:"Cross-Asset Bestätigung", items:["DGS10","DFII10","BAMLH0A0HYM2","DTWEXBGS","DCOILBRENTEU"]}
+ ]
+};
+
+/* ============================================================
+   FETCH — hosted-first, stale-while-revalidate
+   /api/fred hält den FRED-Key serverseitig. Direkter CSV-Fallback
+   bleibt für einfache statische Hosts erhalten.
+   ============================================================ */
+const CHUNK = 24;
+const LOOKBACK_DAYS = 365 * 9;
+let renderPending = false;
+let sourceHint = "";
+
+function isoAgo(days){const d=new Date();d.setDate(d.getDate()-days);return d.toISOString().slice(0,10);}
+function isFresh(id, ttl=CACHE_TTL){return !!state.data[id] && (Date.now()-(state.updatedAt[id]||0) < ttl);}
+function scheduleRender(){
+  if(renderPending) return;
+  renderPending=true;
+  requestAnimationFrame(()=>{renderPending=false;render();});
+}
+
+async function fetchWithTimeout(url, options={}, ms=15000){
+  const c=new AbortController();
+  const t=setTimeout(()=>c.abort(),ms);
+  try{
+    const r=await fetch(url,{...options,signal:c.signal,cache:"no-store"});
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r;
+  } finally { clearTimeout(t); }
+}
+
+function parseCsvMulti(txt){
+  const lines=txt.trim().split(/\r?\n/);
+  if(lines.length<2) return null;
+  const head=lines[0].split(",").map(x=>x.trim().replace(/^"|"$/g,""));
+  if(head.length<2) return null;
+  const out={}; head.slice(1).forEach(h=>out[h]=[]);
+  for(let i=1;i<lines.length;i++){
+    const p=lines[i].split(","), d=(p[0]||"").trim();
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue;
+    for(let j=1;j<head.length;j++){
+      const v=Number.parseFloat(p[j]);
+      if(Number.isFinite(v)) out[head[j]].push({date:d,value:v});
+    }
+  }
+  return out;
+}
+
+async function fetchBackend(ids){
+  const u=new URL(API_ENDPOINT, location.href);
+  u.searchParams.set("ids",ids.join(","));
+  u.searchParams.set("start",isoAgo(LOOKBACK_DAYS));
+  const r=await fetchWithTimeout(u.toString(),{},18000);
+  const j=await r.json();
+  if(!j || !j.data || typeof j.data!=="object") throw new Error("Ungültige API-Antwort");
+  sourceHint="server";
+  return j.data;
+}
+
+async function fetchFredCsv(ids){
+  const url=`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${encodeURIComponent(ids.join(","))}&cosd=${isoAgo(LOOKBACK_DAYS)}`;
+  const r=await fetchWithTimeout(url,{},18000);
+  const txt=await r.text();
+  if(!txt || txt.trim().startsWith("<")) throw new Error("FRED CSV nicht lesbar");
+  const m=parseCsvMulti(txt);
+  if(!m) throw new Error("FRED CSV ungültig");
+  sourceHint="fred-direct";
+  return m;
+}
+
+function normalizePayload(m, ids){
+  const out={};
+  for(const id of ids){
+    const k=Object.keys(m||{}).find(x=>x.toUpperCase()===id.toUpperCase());
+    if(!k || !Array.isArray(m[k])) continue;
+    const arr=m[k].map(o=>({date:o.date,value:Number(o.value)})).filter(o=>/^\d{4}-\d{2}-\d{2}$/.test(o.date)&&Number.isFinite(o.value));
+    if(arr.length) out[id]=arr;
+  }
+  return out;
+}
+
+async function fetchBatch(batch){
+  try{ return normalizePayload(await fetchBackend(batch),batch); }
+  catch(serverErr){
+    try{ return normalizePayload(await fetchFredCsv(batch),batch); }
+    catch(directErr){ throw new Error(`${serverErr.message}; ${directErr.message}`); }
+  }
+}
+
+async function loadIds(ids,{force=false}={}){
+  const unique=[...new Set(ids)].filter(Boolean);
+  const todo=unique.filter(i=>!state.loading.has(i) && (force || !isFresh(i)));
+  if(!todo.length){
+    if(unique.every(i=>state.data[i])) setStatus("ok",state.lastSync?`Cache · Sync ${new Date(state.lastSync).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}`:"Cache");
+    return;
+  }
+  todo.forEach(i=>{state.loading.add(i);delete state.errors[i];});
+  const batches=[]; for(let i=0;i<todo.length;i+=CHUNK)batches.push(todo.slice(i,i+CHUNK));
+  let done=0, failed=0;
+  setStatus("busy",`aktualisiere ${todo.length} Serien…`);
+  const q=batches.slice();
+  const worker=async()=>{while(q.length){
+    const b=q.shift();
+    try{
+      const m=await fetchBatch(b), now=Date.now();
+      for(const id of b){
+        if(m[id]?.length){state.data[id]=m[id];state.updatedAt[id]=now;delete state.errors[id];}
+        else {state.errors[id]="nicht verfügbar";failed++;}
+        state.loading.delete(id);
+      }
+    }catch(e){
+      for(const id of b){state.errors[id]=e.message||"Abruf fehlgeschlagen";state.loading.delete(id);failed++;}
+    }
+    done+=b.length;
+    setStatus("busy",`${done}/${todo.length}${sourceHint?" · "+sourceHint:""}`);
+    scheduleRender();
+  }};
+  await Promise.all(Array.from({length:Math.min(3,batches.length||1)},worker));
+  state.lastSync=Date.now(); state.source=sourceHint;
+  saveCache();
+  setStatus(failed===todo.length?"bad":failed?"bad":"ok", failed?`${todo.length-failed}/${todo.length} aktualisiert · ${failed} fehlen`:`${sourceHint||"Daten"} · ${new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}`);
+  scheduleRender();
+}
+
+/* ============================================================
+   TRANSFORMATIONEN
+   ============================================================ */
+function toYoY(obs){
+  const out=[];
+  for(let i=0;i<obs.length;i++){
+    const t=new Date(obs[i].date); t.setFullYear(t.getFullYear()-1);
+    let best=null,bd=Infinity;
+    for(let j=i-1;j>=0;j--){
+      const d=Math.abs(new Date(obs[j].date)-t);
+      if(d<bd){bd=d;best=obs[j];} else if(d>bd+45*864e5) break;
+    }
+    if(best && bd < 50*864e5 && best.value) out.push({date:obs[i].date,value:(obs[i].value/best.value-1)*100});
+  }
+  return out;
+}
+const toChg = obs => obs.slice(1).map((o,i)=>({date:o.date,value:o.value-obs[i].value}));
+
+function transform(obs, cfg){
+  const sc = cfg.sc||1;
+  let s;
+  if(cfg.t==="yoy") s = toYoY(obs);
+  else if(cfg.t==="chg") s = toChg(obs).map(o=>({date:o.date,value:o.value*sc}));
+  else s = obs.map(o=>({date:o.date,value:o.value*sc}));
+  return s;
+}
+function ann3m(obs){ // 3M annualisiert - nur fuer monatliche Indexreihen sinnvoll
+  if(obs.length<4) return null;
+  const n=obs.length;
+  const span=(new Date(obs[n-1].date)-new Date(obs[n-4].date))/864e5;
+  if(span<70||span>110) return null;           // keine Monatsfrequenz -> ueberspringen
+  const a=obs[n-1].value, b=obs[n-4].value;
+  if(!b||a/b<=0) return null;
+  return (Math.pow(a/b,4)-1)*100;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function spark(series,color){
+  const pts = series.slice(-90);
+  if(pts.length<2) return "";
+  const vs = pts.map(p=>p.value), mn=Math.min(...vs), mx=Math.max(...vs), rg=(mx-mn)||1;
+  const W=100,H=30;
+  const d = pts.map((p,i)=>`${(i/(pts.length-1)*W).toFixed(2)},${(H-((p.value-mn)/rg)*(H-4)-2).toFixed(2)}`).join(" ");
+  const zeroY = (mn<0&&mx>0)? (H-((0-mn)/rg)*(H-4)-2).toFixed(2) : null;
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    ${zeroY?`<line x1="0" y1="${zeroY}" x2="${W}" y2="${zeroY}" stroke="#2a3a55" stroke-width="0.5" stroke-dasharray="2 2"/>`:""}
+    <polyline points="${d}" fill="none" stroke="${color}" stroke-width="1.3" vector-effect="non-scaling-stroke"/>
+  </svg>`;
+}
+const COL={g:"#3fbf7f",a:"#e0a83c",r:"#e4665c","":"#5b8dd6"};
+
+function cardSeries(id){
+  const cfg = S[id];
+  if(!cfg) return "";
+  const raw = state.data[id];
+  if(!raw){
+    if(state.errors[id]) return `<div class="card"><div class="cname">${cfg.n}<span class="cid">${id}</span></div>
+      <div class="err">nicht verfügbar</div><div class="csub">${state.errors[id]} · <a href="https://fred.stlouisfed.org/searchresults?st=${encodeURIComponent(id)}" target="_blank" rel="noopener noreferrer">FRED suchen</a></div></div>`;
+    return `<div class="card"><div class="cname">${cfg.n}<span class="cid">${id}</span></div><div class="load">lädt…</div></div>`;
+  }
+  const s = transform(raw,cfg);
+  if(!s.length) return `<div class="card"><div class="cname">${cfg.n}<span class="cid">${id}</span></div><div class="err">zu wenig Daten</div></div>`;
+  const last = s[s.length-1], prev = s[s.length-2];
+  const sig = cfg.sig? (cfg.sig(last.value)||"") : "";
+  const delta = prev? last.value-prev.value : null;
+  let extra="";
+  if(cfg.t==="yoy"){ const a=ann3m(raw); if(a!=null) extra=`<span>3M ann. ${nf(a,1)}%</span>`; }
+  const stale=!isFresh(id), refreshWarn=state.errors[id]?`<span class="warn">Refresh fehlgeschlagen</span>`:"";
+  return `<div class="card ${sig} ${stale?"stale":""}" data-note="${id}">
+    <div class="cname">${cfg.n}<span class="cid">${id}</span></div>
+    <div class="cval">${nf(last.value,cfg.d)}<small>${cfg.u||""}</small></div>
+    <div class="csub"><span class="delta">${delta==null?"":(delta>0?"↑ ":delta<0?"↓ ":"→ ")}${delta==null?"":sgn(delta,cfg.d)}</span>${extra}<span>${dmy(last.date)}</span>${refreshWarn}</div>
+    ${spark(s,COL[sig])}
+    ${cfg.note?`<div class="note">${cfg.note}<br><br><a href="https://fred.stlouisfed.org/series/${id}" target="_blank" rel="noopener noreferrer">FRED ↗</a></div>`:""}
+  </div>`;
+}
+
+function cardDerived(key){
+  const cfg = D[key];
+  const missing = cfg.ids.filter(i=>!state.data[i]);
+  if(cfg.ids.some(i=>state.errors[i])) return `<div class="card"><div class="cname">${cfg.n}</div><div class="err">Basisserie fehlt</div></div>`;
+  if(missing.length) return `<div class="card"><div class="cname">${cfg.n}</div><div class="load">lädt…</div></div>`;
+  let s;
+  if(cfg.fn) s = cfg.fn(state.data[cfg.ids[0]], state.data[cfg.ids[1]]);
+  else { // Default: Level minus YoY
+    const a = transform(state.data[cfg.ids[0]], S[cfg.ids[0]]);
+    const b = transform(state.data[cfg.ids[1]], S[cfg.ids[1]]);
+    s = alignPairs(a,b).map(p=>({date:p.date,value:p.x-p.y}));
+  }
+  if(!s || s.length<2) return `<div class="card"><div class="cname">${cfg.n}</div><div class="err">nicht berechenbar</div></div>`;
+  const last=s[s.length-1], prev=s[s.length-2];
+  const sig = cfg.sig? (cfg.sig(last.value)||"") : "";
+  const delta = last.value-prev.value;
+  const stale=cfg.ids.some(i=>!isFresh(i));
+  return `<div class="card ${sig} ${stale?"stale":""}" data-note="d:${key}">
+    <div class="cname">${cfg.n}<span class="cid">berechnet</span></div>
+    <div class="cval">${nf(last.value,cfg.d)}<small>${cfg.u||""}</small></div>
+    <div class="csub"><span class="delta">${delta>0?"↑ ":delta<0?"↓ ":"→ "}${sgn(delta,cfg.d)}</span><span>${dmy(last.date)}</span></div>
+    ${spark(s,COL[sig])}
+    ${cfg.note?`<div class="note">${cfg.note}</div>`:""}
+  </div>`;
+}
+const cardFor = k => k.startsWith("d:") ? cardDerived(k.slice(2)) : cardSeries(k);
+
+/* ---------- Regime-Panel ---------- */
+function scoreOf(id){
+  const cfg=S[id], raw=state.data[id];
+  if(!cfg||!raw) return null;
+  const s=transform(raw,cfg); if(!s.length) return null;
+  const g=cfg.sig? cfg.sig(s[s.length-1].value):"";
+  return g==="g"?1:g==="a"?0:g==="r"?-1:null;
+}
+function zLast(id,win){
+  const raw=state.data[id]; if(!raw||raw.length<win+5) return null;
+  const v=raw.slice(-win).map(o=>o.value);
+  const m=v.reduce((a,b)=>a+b,0)/v.length;
+  const sd=Math.sqrt(v.reduce((a,b)=>a+(b-m)*(b-m),0)/v.length);
+  return sd? (v[v.length-1]-m)/sd : null;
+}
+function regimePanel(){
+  const gIds=["PAYEMS","INDPRO","PCEC96","IC4WSA","UMCSENT","NEWORDER"];
+  const iIds=["PCEPILFE","CPILFESL","CORESTICKM159SFRBATL","T10YIE"];
+  const gs=gIds.map(scoreOf).filter(v=>v!=null), is=iIds.map(scoreOf).filter(v=>v!=null);
+  const gAvg = gs.length? gs.reduce((a,b)=>a+b,0)/gs.length : null;
+  // Inflation: 'r' bedeutet HOHE Inflation → invertieren zu Inflations-Score
+  const iAvg = is.length? -(is.reduce((a,b)=>a+b,0)/is.length) : null;
+  const gUp = gAvg!=null && gAvg>=0, iUp = iAvg!=null && iAvg>=0;
+  const quad = gUp? (iUp?"Reflation":"Goldilocks") : (iUp?"Stagflation":"Deflation / Bust");
+  const quads=["Goldilocks","Reflation","Deflation / Bust","Stagflation"];
+
+  // Dollar Smile Klassifikator (Prototyp, 252d rolling z)
+  const zD=zLast("DTWEXBGS",252), zV=zLast("VIXCLS",252), zE=zLast("BAMLEMCBPIOAS",252);
+  let smile="–", smileNote="Daten fehlen";
+  if(zD!=null&&zV!=null&&zE!=null){
+    const th=1.0;
+    if(zD<0){smile="MITTE — schwacher Dollar";smileNote="Weder Panik noch US-Outperformance. Risk-on für EM, Rohstoffe, non-US.";}
+    else if(zV>th&&zE>th){smile="LINKS — Panik / Safe Haven";smileNote="VIX-UND-EM-Konjunktion erfüllt. Dollar stark aus Angst. Wrecking-Ball-Regime.";}
+    else {smile="RECHTS — Carry / Wachstum";smileNote="Dollar stark aus US-Outperformance. Carry funktioniert, EM hält.";}
+  }
+  // Financial Conditions Ampel
+  const fc=["NFCI","BAMLH0A0HYM2","BAMLC0A0CM","VIXCLS"].map(scoreOf).filter(v=>v!=null);
+  const fcAvg=fc.length?fc.reduce((a,b)=>a+b,0)/fc.length:null;
+  const fcTxt = fcAvg==null?"–":fcAvg>0.4?"locker":fcAvg>-0.3?"neutral":"straff";
+
+  return `<div class="panelbox">
+    <div class="regime">
+      <div class="rg"><h4>Growth / Inflation Quadrant</h4>
+        <div class="rgv">${quad}</div>
+        <div class="rgs">Growth-Score ${gAvg==null?"–":sgn(gAvg,2)} · Inflations-Score ${iAvg==null?"–":sgn(iAvg,2)}</div>
+        <div class="quad">${quads.map(q=>`<div class="qc ${q===quad?"on":""}">${q}</div>`).join("")}</div>
+      </div>
+      <div class="rg"><h4>Dollar Smile (Prototyp)</h4>
+        <div class="rgv" style="font-size:16px">${smile}</div>
+        <div class="rgs">${smileNote}</div>
+        <div class="rgs" style="margin-top:8px;font-family:var(--mono);font-size:11px">
+          z(DXY) ${zD==null?"–":sgn(zD,2)} · z(VIX) ${zV==null?"–":sgn(zV,2)} · z(EM) ${zE==null?"–":sgn(zE,2)}<br>
+          252-Tage rolling, kausal · Schwelle θ=1,0 · VIX-UND-EM
+        </div>
+      </div>
+      <div class="rg"><h4>Financial Conditions</h4>
+        <div class="rgv">${fcTxt}</div>
+        <div class="rgs">Aus NFCI, HY OAS, IG OAS, VIX. Merke: Conditions können sich gegenläufig zum Leitzins bewegen — dort bricht die Transmission.</div>
+      </div>
+    </div>
+    <div class="rgs" style="margin-top:12px;color:var(--dim2)">
+      Die Scores sind mechanische Aggregationen der Ampeln, kein Modell. Sie ersetzen keine These —
+      sie sagen dir nur, wo du hinschauen sollst.
+    </div>
+  </div>`;
+}
+
+/* ---------- Info-Tab ---------- */
+function infoTab(){
+  return `
+  <div class="panelbox">
+    <div class="secttl" style="margin-top:0">Release-Rhythmus (US)</div>
+    <table>
+      <tr><th>Release</th><th>Wann</th><th>Was du zuerst liest</th></tr>
+      <tr><td>Jobless Claims</td><td>jeden Do, 14:30 MEZ</td><td>4W-Schnitt, nicht die Einzelwoche</td></tr>
+      <tr><td>Employment Situation (NFP)</td><td>1. Freitag im Monat</td><td>NFP vs. Breakeven, dann Revisionen, dann U-3+Participation zusammen</td></tr>
+      <tr><td>JOLTS</td><td>~1. Werktag+, ~5 Wochen Lag</td><td>Quits &amp; Layoffs zuerst, Openings zuletzt</td></tr>
+      <tr><td>CPI</td><td>~10.–15. des Folgemonats</td><td>Core MoM → Shelter → Services ex Shelter → Goods</td></tr>
+      <tr><td>PPI</td><td>1 Tag um CPI herum</td><td>Pipeline-Druck, Margen</td></tr>
+      <tr><td>Retail Sales</td><td>~15. des Monats</td><td>Control Group, nicht Headline</td></tr>
+      <tr><td>PCE / Personal Income</td><td>~letzter Werktag des Monats</td><td>Core PCE MoM, Saving Rate, Real DPI</td></tr>
+      <tr><td>ISM Manufacturing / Services</td><td>1. / 3. Werktag</td><td>New Orders, Employment, Prices Paid</td></tr>
+      <tr><td>SLOOS</td><td>~3 Wochen nach Quartalsende</td><td>Netto-% Verschärfung (Flow, nicht Level!)</td></tr>
+      <tr><td>FOMC</td><td>8x/Jahr, Mi 20:00 MEZ</td><td>Statement-Diff, dann SEP/Dots, dann Presser</td></tr>
+      <tr><td>EZB</td><td>alle 6 Wochen, Do</td><td>Staff Projections, dann Lagarde-Q&amp;A</td></tr>
+    </table>
+  </div>
+
+  <div class="panelbox">
+    <div class="secttl" style="margin-top:0">Deine offenen Threads (Stand Modul 11)</div>
+    <ul>
+      <li><b>Layoff-Rate</b> (<code>JTSLDR</code>) — der Trigger vom frozen- ins recessionary-Regime. Solange flach, gilt „low-hire, low-fire".</li>
+      <li><b>Saving-Rate-Kollaps</b> (<code>PSAVERT</code>) — konsumfinanziert aus Ersparnis. Die offene Frage bleibt der „Salat-Moment" der oberen Quintile (40–60% des PCE).</li>
+      <li><b>Core-PCE-Trajektorie</b> (<code>PCEPILFE</code>), wenn die Energie-Basiseffekte rausrollen.</li>
+      <li><b>BoJ-Normalisierung &amp; Carry-Unwind</b> (<code>DEXJPUS</code>) — Referenzepisode 5. August 2024.</li>
+      <li><b>EZB-Hiking-Zyklus</b> in einen Cost-Push-Schock hinein (<code>ECBDFR</code>, <code>CP0000EZ19M086NEST</code>).</li>
+    </ul>
+  </div>
+
+  <div class="panelbox">
+    <div class="secttl" style="margin-top:0">Falsifikations-Trigger (Modul 10, wörtlich)</div>
+    <p style="color:var(--dim);font-size:13.5px;margin:6px 0">
+      Deine Lesart „Stress ist Zins/Inflation, nicht Kredit" kippt, wenn:
+    </p>
+    <ul>
+      <li>HY OAS nachhaltig &gt;2σ widenet <b>und</b> IG mitzieht</li>
+      <li><code>DRTSCILM</code> scharf über null dreht</li>
+      <li><code>SOFR − IORB</code> anhaltend ausreißt oder ON RRP gegen null läuft</li>
+      <li>der NFCI sich strafft, <b>während</b> die Fed nichts tut</li>
+    </ul>
+    <p style="color:var(--dim2);font-size:12.5px">
+      Jedes davon wäre der Übergang vom Inflations- ins Kredit-/Liquiditäts-Regime — und damit ein anderer Trade.
+    </p>
+  </div>
+
+  <div class="panelbox">
+    <div class="secttl" style="margin-top:0">Lesedisziplin — die vier Fragen</div>
+    <ul>
+      <li><b>Monat oder Jahr?</b> Bei jedem „little changed" sofort die Jahresveränderung checken.</li>
+      <li><b>Aggregat oder Branche?</b> In die zyklischen Frühindikator-Branchen zoomen.</li>
+      <li><b>Level oder Trend?</b> Ein Sprung nach einem Einbruch ist Rauschen.</li>
+      <li><b>Signal oder Statistik-Artefakt?</b> Größe ≠ Echtheit. Persistenz + Bestätigung durch andere Indikatoren verlangen.</li>
+    </ul>
+    <p style="color:var(--dim2);font-size:12.5px">Prinzip über allem: aktiv nach dem suchen, was die eigene These <i>widerlegt</i>.</p>
+  </div>
+
+  <div class="panelbox">
+    <div class="secttl" style="margin-top:0">Modul → Indikatoren</div>
+    <table>
+      <tr><th>Modul</th><th>Tab</th></tr>
+      <tr><td>1–3 Circular Flow, Growth</td><td>Wachstum</td></tr>
+      <tr><td>4 Sentiment / Soft Data</td><td>Wachstum (UMich), Märkte</td></tr>
+      <tr><td>5–6 Labor</td><td>Arbeitsmarkt</td></tr>
+      <tr><td>7–8 Inflation</td><td>Inflation</td></tr>
+      <tr><td>9 Geldpolitik</td><td>Policy &amp; Zinsen</td></tr>
+      <tr><td>10 Credit &amp; Liquidity</td><td>Credit &amp; Liquidity</td></tr>
+      <tr><td>11 External Sector</td><td>External / FX, Europa</td></tr>
+    </table>
+  </div>`;
+}
+
+/* ---------- Custom-Tab ---------- */
+let custom = [];
+function customTab(){
+  return `<div class="panelbox">
+    <div class="secttl" style="margin-top:0">Eigene FRED-Serie hinzufügen</div>
+    <div class="row"><input type="text" id="cin" placeholder="z.B. DGS5 oder GFDEBTN"><button id="cadd">+</button></div>
+    <div class="rgs" style="margin-top:8px">Serien-ID von <a href="https://fred.stlouisfed.org" target="_blank" rel="noopener noreferrer">fred.stlouisfed.org</a> — steht in der URL. Wird als Level dargestellt und lokal auf deinen Geräten gespeichert.</div>
+  </div>
+  <div class="grid">${custom.map(id=>cardSeries(id)).join("")}</div>`;
+}
+
+/* ---------- Haupt-Render ---------- */
+function render(){
+  document.getElementById("tabs").innerHTML = TABS.map(t=>
+    `<div class="tab ${t.id===state.tab?"on":""}" data-tab="${t.id}">${t.label}</div>`).join("");
+  const m=document.getElementById("main");
+  if(state.tab==="info"){ m.innerHTML=infoTab(); bind(); return; }
+  if(state.tab==="custom"){ m.innerHTML=customTab(); bind(); return; }
+  const secs = LAYOUT[state.tab]||[];
+  m.innerHTML = secs.map(s=>{
+    if(s.special==="regime") return `<div class="secttl">${s.t}</div>` + regimePanel();
+    return `<div class="secttl">${s.t}</div><div class="grid">${s.items.map(cardFor).join("")}</div>`;
+  }).join("") + `<div class="foot">Daten: Federal Reserve Bank of St. Louis (FRED). Alle Werte wie von der Quelle publiziert, inkl. Revisionen. Keine Anlageberatung.</div>`;
+  bind();
+}
+function bind(){
+  document.querySelectorAll(".tab").forEach(el=>el.onclick=()=>{state.tab=el.dataset.tab;saveCache();render();ensure();});
+  document.querySelectorAll(".card").forEach(el=>el.onclick=()=>el.classList.toggle("open"));
+  const ci=document.getElementById("cin"), ca=document.getElementById("cadd");
+  if(ca) ca.onclick=()=>{
+    const v=(ci.value||"").trim().toUpperCase();
+    if(!/^[A-Z0-9._-]{1,64}$/.test(v)){ ci.value=""; ci.placeholder="ungültige FRED-ID"; return; }
+    if(!S[v]) S[v]={n:v,t:"level",u:"",d:2,sig:()=>''};
+    if(!custom.includes(v)) custom.push(v);
+    saveCache(); ci.value=""; render(); loadIds([v],{force:true});
+  };
+  if(ci) ci.onkeydown=e=>{if(e.key==="Enter")ca.click();};
+}
+function idsForTab(tab){
+  const out=new Set();
+  (LAYOUT[tab]||[]).forEach(s=>(s.items||[]).forEach(k=>{
+    if(k.startsWith("d:")) D[k.slice(2)].ids.forEach(i=>out.add(i));
+    else out.add(k);
+  }));
+  if(tab==="daily") ["DTWEXBGS","VIXCLS","BAMLEMCBPIOAS","PAYEMS","INDPRO","PCEC96","UMCSENT","NEWORDER","CPILFESL","T10YIE"].forEach(i=>out.add(i));
+  if(tab==="custom") custom.forEach(i=>out.add(i));
+  return [...out];
+}
+function ensure(force=false){ loadIds(idsForTab(state.tab),{force}); }
+
+function setStatus(kind,txt){
+  const d=document.getElementById("dot"); d.className="dot "+(kind||"");
+  document.getElementById("status").textContent=txt;
+}
+
+/* ---------- Browser-Cache: sofort anzeigen, im Hintergrund erneuern ---------- */
+function saveCache(){
+  try{
+    const slim={};
+    for(const [k,v] of Object.entries(state.data)) slim[k]=v.slice(-400).map(o=>[o.date,o.value]);
+    localStorage.setItem(CACHE_KEY,JSON.stringify({
+      version:APP_VERSION, ts:Date.now(), d:slim, updatedAt:state.updatedAt,
+      tab:state.tab, custom, autoRefresh:state.autoRefresh, lastSync:state.lastSync
+    }));
+  }catch(e){}
+}
+function loadCache(){
+  try{
+    const raw=localStorage.getItem(CACHE_KEY); if(!raw) return;
+    const p=JSON.parse(raw);
+    for(const [k,v] of Object.entries(p.d||{})) state.data[k]=v.map(a=>({date:a[0],value:Number(a[1])})).filter(o=>Number.isFinite(o.value));
+    state.updatedAt=p.updatedAt||{};
+    state.tab=TABS.some(t=>t.id===p.tab)?p.tab:"daily";
+    custom=Array.isArray(p.custom)?p.custom.filter(v=>/^[A-Z0-9._-]{1,64}$/.test(v)):[];
+    custom.forEach(v=>{if(!S[v])S[v]={n:v,t:"level",u:"",d:2,sig:()=>''};});
+    state.autoRefresh=p.autoRefresh!==false;
+    state.lastSync=Number(p.lastSync)||0;
+    if(Object.keys(state.data).length) setStatus("ok","Cache geladen · prüfe Aktualität…");
+  }catch(e){}
+}
+function clearLocalCache(){
+  try{localStorage.removeItem(CACHE_KEY);}catch(e){}
+  state.data={};state.errors={};state.updatedAt={};state.lastSync=0;custom=[];
+  render();ensure(true);
+}
+function updateNetworkBadge(){
+  const el=document.getElementById("net"); if(el) el.textContent=navigator.onLine?"online":"offline";
+  if(!navigator.onLine) setStatus("bad","offline · zeige lokalen Cache");
+}
+
+/* ---------- Init ---------- */
+document.getElementById("btnRefresh").onclick=()=>ensure(true);
+document.getElementById("btnCfg").onclick=()=>{
+  document.getElementById("autoRefresh").checked=state.autoRefresh;
+  document.getElementById("cfgDialog").showModal();
+};
+document.getElementById("btnCloseCfg").onclick=()=>{
+  state.autoRefresh=document.getElementById("autoRefresh").checked; saveCache();
+  document.getElementById("cfgDialog").close();
+};
+document.getElementById("btnClear").onclick=()=>{
+  if(confirm("Lokalen Dashboard-Cache und eigene Serien wirklich löschen?")){document.getElementById("cfgDialog").close();clearLocalCache();}
+};
+document.getElementById("stamp").textContent = "· " + new Date().toLocaleDateString("de-DE",{day:"2-digit",month:"short",year:"numeric"});
+window.addEventListener("online",()=>{updateNetworkBadge();if(state.autoRefresh)ensure();});
+window.addEventListener("offline",updateNetworkBadge);
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible" && state.autoRefresh && Date.now()-state.lastSync>VISIBLE_REFRESH_AFTER) ensure();
+});
+
+loadCache(); updateNetworkBadge(); render();
+ensure();
+
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));
+}
+
+</script>
+</body>
+</html>
