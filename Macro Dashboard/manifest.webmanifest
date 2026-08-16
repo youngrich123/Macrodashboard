@@ -1,9 +1,0 @@
-{
-  "name": "Macro Dashboard",
-  "short_name": "Macro",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#070b12",
-  "theme_color": "#0a0f1a",
-  "lang": "de"
-}
